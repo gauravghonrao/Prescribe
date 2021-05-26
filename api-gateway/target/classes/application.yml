@@ -1,0 +1,44 @@
+server:
+  port: 9090
+    
+spring:
+  application:
+    name: API-GATEWAY
+  cloud:
+    gateway:
+      routes:
+        - id : USER-SERVICE
+          uri: lb://USER-SERVICE
+          predicates: 
+            - Path=/user/**
+          filters:
+            - name : CircuitBreaker
+              args:
+                name: USER-SERVICE
+                fallbackuri:  forward:/userServiceFallBackMethod
+        - id : DOCUMENT-SERVICE
+          uri: lb://DOCUMENT-SERVICE
+          predicates: 
+            - Path=/document/**
+          filters:
+            - name : CircuitBreaker
+              args:
+                name: DOCUMENT-SERVICE
+                fallbackuri:  forward:/documentServiceFallBackMethod
+  
+
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 4000            
+            
+management:
+  endpoints:
+    web:
+      exposure:
+        include: hystrix.stream
+                
